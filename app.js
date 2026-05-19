@@ -6,8 +6,6 @@ const THRESHOLD_WAAAY = 90;
 const SMOOTHING = 0.85;
 const SPL_OFFSET = 94;
 
-const startScreen = document.getElementById('start-screen');
-const startBtn = document.getElementById('start');
 const screen = document.getElementById('screen');
 const dbValue = document.getElementById('db-value');
 const verdictFill = document.getElementById('verdict');
@@ -15,6 +13,8 @@ const verdictStroke = document.getElementById('verdict-stroke');
 const meterBars = document.getElementById('meter-bars');
 
 const VERDICTS = {
+  'idle': 'tap to start',
+  'error': 'mic needed\ntap to retry',
   'not-too-loud': 'not\ntoo loud',
   'too-loud': 'TOO\nLOUD',
   'waaaay': 'WAAAAY\nTOO\nLOUD',
@@ -27,9 +27,19 @@ for (let i = 0; i < TOTAL_BARS; i++) {
 }
 
 let smoothedRms = 0;
-let currentState = null;
+let currentState = 'idle';
+let micStarted = false;
+
+function setState(state) {
+  if (state === currentState) return;
+  currentState = state;
+  screen.dataset.state = state;
+  verdictFill.textContent = VERDICTS[state];
+  verdictStroke.textContent = VERDICTS[state];
+}
 
 async function start() {
+  if (micStarted) return;
   let stream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({
@@ -40,12 +50,11 @@ async function start() {
       },
     });
   } catch (err) {
-    alert('mic access is required. tap the button again and allow microphone access.');
+    setState('error');
     return;
   }
 
-  startScreen.hidden = true;
-  screen.hidden = false;
+  micStarted = true;
 
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   const ctx = new AudioCtx();
@@ -82,12 +91,7 @@ function render(db) {
   else if (db < THRESHOLD_WAAAY) state = 'too-loud';
   else state = 'waaaay';
 
-  if (state !== currentState) {
-    currentState = state;
-    screen.dataset.state = state;
-    verdictFill.textContent = VERDICTS[state];
-    verdictStroke.textContent = VERDICTS[state];
-  }
+  setState(state);
 
   const ratio = (db - DB_MIN) / (DB_MAX - DB_MIN);
   const filled = Math.max(0, Math.min(TOTAL_BARS, Math.round(ratio * TOTAL_BARS)));
@@ -98,4 +102,7 @@ function render(db) {
   }
 }
 
-startBtn.addEventListener('click', start);
+// tap anywhere to start (or retry after error)
+screen.addEventListener('click', () => {
+  if (!micStarted) start();
+});

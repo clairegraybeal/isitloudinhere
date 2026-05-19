@@ -3,6 +3,9 @@
   --bar-filled: #9d9d9d;
   --bar-empty: #ffffff;
 
+  --idle-fill: #bdbdbd;
+  --idle-stroke: #6e6e6e;
+
   --green-fill: #6fe89a;
   --green-stroke: #1a8c3a;
   --yellow-fill: #f5c400;
@@ -22,50 +25,9 @@ html, body {
   color: #444;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
-}
-
-#start-screen {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 32px;
-  padding: 32px;
-  text-align: center;
-}
-
-.title {
-  font-size: 40px;
-  font-weight: 700;
-  line-height: 1.05;
-  color: #222;
-  max-width: 320px;
-}
-
-#start {
-  font-family: inherit;
-  font-size: 22px;
-  font-weight: 700;
-  padding: 20px 32px;
-  border: 4px solid #222;
-  border-radius: 999px;
-  background: #fff;
-  color: #222;
-  cursor: pointer;
-  box-shadow: 4px 4px 0 #222;
-  transition: transform 80ms ease, box-shadow 80ms ease;
-}
-#start:active {
-  transform: translate(4px, 4px);
-  box-shadow: 0 0 0 #222;
-}
-
-.hint {
-  font-size: 14px;
-  color: #666;
-  max-width: 280px;
-  line-height: 1.4;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #screen {
@@ -75,7 +37,13 @@ html, body {
   align-items: center;
   padding: 32px 16px 24px;
   position: relative;
+  cursor: pointer;
 }
+
+#screen[data-state="live"] { cursor: default; }
+#screen[data-state="not-too-loud"],
+#screen[data-state="too-loud"],
+#screen[data-state="waaaay"] { cursor: default; }
 
 .readout {
   font-size: 22px;
@@ -126,18 +94,37 @@ html, body {
   white-space: pre-line;
 }
 
-/* outline layer (behind) — uses text-stroke for the chunky outline */
 .verdict--stroke {
   -webkit-text-stroke: var(--stroke-w) currentColor;
   color: transparent;
   text-shadow: none;
 }
-/* fill layer (on top) */
 .verdict--fill {
   color: currentColor;
 }
 
-/* state colors */
+/* idle state — smaller, gray, pulsing to invite tap */
+#screen[data-state="idle"] .verdict {
+  font-size: clamp(40px, 11vw, 64px);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+#screen[data-state="idle"] .verdict--fill { color: var(--idle-fill); }
+#screen[data-state="idle"] .verdict--stroke { color: var(--idle-stroke); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* error state — same sizing/treatment as idle */
+#screen[data-state="error"] .verdict {
+  font-size: clamp(36px, 9vw, 52px);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+#screen[data-state="error"] .verdict--fill { color: var(--red-fill); }
+#screen[data-state="error"] .verdict--stroke { color: var(--red-stroke); }
+
+/* live states */
 #screen[data-state="not-too-loud"] .verdict--fill { color: var(--green-fill); }
 #screen[data-state="not-too-loud"] .verdict--stroke { color: var(--green-stroke); }
 
@@ -148,7 +135,27 @@ html, body {
 #screen[data-state="waaaay"] .verdict--stroke { color: var(--red-stroke); }
 
 footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-top: 16px;
+  text-align: center;
+}
+
+.hint {
+  font-size: 12px;
+  color: #888;
+  max-width: 260px;
+  line-height: 1.3;
+}
+
+.domain {
   font-size: 14px;
   color: #888;
-  padding-top: 16px;
 }
+
+/* hide the hint once mic is live — it's no longer needed */
+#screen[data-state="not-too-loud"] .hint,
+#screen[data-state="too-loud"] .hint,
+#screen[data-state="waaaay"] .hint { display: none; }

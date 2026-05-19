@@ -11,20 +11,17 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="start-screen">
-    <h2 class="title">is it loud in here?</h2>
-    <button id="start">tap to find out</button>
-    <p class="hint">we need your mic to measure how loud it is. nothing is recorded or sent anywhere.</p>
-  </div>
-
-  <main id="screen" data-state="not-too-loud" hidden>
+  <main id="screen" data-state="idle">
     <p class="readout"><span id="db-value">--</span> dB is</p>
     <div class="meter">
       <div class="bars" id="meter-bars"></div>
-      <h1 class="verdict verdict--stroke" id="verdict-stroke" aria-hidden="true">not<br>too loud</h1>
-      <h1 class="verdict verdict--fill" id="verdict">not<br>too loud</h1>
+      <h1 class="verdict verdict--stroke" id="verdict-stroke" aria-hidden="true">tap to start</h1>
+      <h1 class="verdict verdict--fill" id="verdict">tap to start</h1>
     </div>
-    <footer>isitloudinhere.com</footer>
+    <footer>
+      <span class="hint" id="hint">mic stays on-device. nothing is recorded.</span>
+      <span class="domain">isitloudinhere.com</span>
+    </footer>
   </main>
 
   <script src="app.js"></script>
